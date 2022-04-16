@@ -1,0 +1,262 @@
+﻿<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>
+        Intro to MapView - Create a 2D map | Sample | ArcGIS API for JavaScript
+        4.23
+    </title>
+
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 97%;
+            width: 100%;
+        }
+
+        #basemapGalleryDiv {
+            right: 10px;
+            top: 10px;
+        }
+
+        //body
+        body {
+            position: relative;
+        }
+
+        .yemei {
+            box-sizing: border-box;
+            height: 45px;
+            width: 100%;
+            background-color: #C0C0C0;
+            font-size: 30px;
+            color: black;
+            /*padding-left: 20px;*/
+        }
+        }
+    </style>
+
+    <link rel="stylesheet"
+          href="https://js.arcgis.com/4.23/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.23/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/widgets/BasemapGallery",
+        "esri/widgets/ScaleBar",
+        "esri/widgets/Legend",
+        "esri/widgets/LayerList",
+        "esri/widgets/Bookmarks",
+        "esri/widgets/Compass",
+        "esri/widgets/Search",
+        "esri/widgets/Measurement",
+        "esri/widgets/AreaMeasurement2D",
+        "esri/widgets/Expand",
+        "esri/tasks/FindTask",
+        "esri/widgets/Home",
+        "esri/popup/content/AttachmentsContent",
+        "esri/widgets/Print",
+        "esri/widgets/Track",
+        "esri/popup/content/TextContent"
+      ], (
+        Map,
+        MapView,
+        FeatureLayer,
+        BasemapGallery,
+        ScaleBar,
+        Legend,
+        LayerList,
+        Bookmarks,
+        Compass,
+        Search,
+        Measurement,
+        AreaMeasurement2D,
+        Expand,
+        FindTask,
+        Home,
+        Print,
+        Track,
+        AttachmentsContent,
+        TextContent
+      ) => {
+        let features, editor;
+
+        const layer = new FeatureLayer({
+          // URL to the service
+          url: "https://www.geosceneonline.cn/server/rest/services/Hosted/trainpoint/FeatureServer",
+          title: "火车站点"
+        });
+        //map
+        const map = new Map({
+          basemap: "streets-vector"
+        });
+
+        map.layers.add(layer);
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          extent: {
+            // autocasts as new Extent()
+            xmin: 9057201,
+            ymin: 2072463,
+            xmax: 13960698,
+            ymax: 6980849,
+            spatialReference: 102100
+          }
+        });
+
+        const searchWidget = new Search({
+          view: view
+        });
+        // Adds the search widget below other elements in
+        // the top left corner of the view
+        view.ui.add(searchWidget, {
+          position: "bottom-right",
+          index: 2
+        });
+
+        let layerList = new LayerList({
+          view: view
+        });
+
+        const ExpandlL = new Expand({
+          view: view,
+          content: layerList,
+          expanded: false
+        });
+        view.ui.add(ExpandlL, "top-left");
+
+        let compass = new Compass({
+          view: view
+        });
+        // adds the compass to the top left corner of the MapView
+        view.ui.add(compass, "top-right");
+
+        const bookmarks = new Bookmarks({
+          view: view,
+          // allows bookmarks to be added, edited, or deleted
+          editingEnabled: true
+        });
+        const bkExpand = new Expand({
+          view: view,
+          content: bookmarks,
+          expanded: false
+        });
+        view.ui.add(bkExpand, "top-right");
+
+
+        let legend = new Legend(
+          {
+            view: view,
+            style: "classic",
+            layerInfos: [{ layer: layer, title: "火车站点" }]
+          },
+          "legend"
+        );
+
+        const Expandlg = new Expand({
+          view: view,
+          content: legend,
+          expanded: false
+        });
+        view.ui.add(Expandlg, "top-left");
+
+        let scaleBar = new ScaleBar({
+          view: view,
+          style: "ruler",
+          unit: " no-metric"
+        });
+        //Add widget to the bottom left corner of the view
+        view.ui.add(scaleBar, {
+          position: "bottom-left"
+        });
+
+        let homeWidget = new Home({
+          view: view
+        });
+        // adds the home widget to the top left corner of the MapView
+        view.ui.add(homeWidget, "bottom-right");
+
+ //print
+        const print = new Print({
+          view: view,
+          // specify your own print service
+          printServiceUrl:
+            "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+        });
+
+        const measurement = new Measurement({
+          view: view,
+          activeTool: "distance"
+        });
+
+        const measureExpand = new Expand({
+          view: view,
+          content: measurement,
+          expanded: false
+        });
+        view.ui.add(measureExpand, "top-right");
+
+        // To add the AreaMeasurement2D widget to your map
+        let measurementWidget = new AreaMeasurement2D({
+         view: view,
+          activeTool:"area"
+          });
+
+          const measurementWidgetExpand = new Expand({
+          view: view,
+          content: measurementWidget,
+          expanded: false
+        });
+        view.ui.add(measurementWidgetExpand, "top-right");
+
+
+        let basemapGallery = new BasemapGallery(
+          {
+            view: view
+          },
+          "basemapGallery"
+        );
+        basemapGallery.startup;
+        // Add widget to the top right corner of the view
+
+        const bgExpand = new Expand({
+          view: view,
+          content: basemapGallery,
+          expanded: false
+        });
+
+        // Add the widget to the top-right corner of the view
+        view.ui.add(bgExpand, "top-right");
+
+
+        let track = new Track({
+          view: view
+        });
+        const trExpand = new Expand({
+          view: view,
+          content: track,
+          expanded: false
+        });
+        view.ui.add(trExpand, "top-right");
+      });
+    </script>
+</head>
+
+<body>
+    <div id="basemapGalleryDiv"></div>
+    <div class="yemei">
+        <b>全国火车站点</b>
+        <div id="searchdiv"></div>
+    </div>
+    <div id="viewDiv"></div>
+</body>
+</html>
